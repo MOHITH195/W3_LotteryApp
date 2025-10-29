@@ -80,11 +80,47 @@ contract RaffleUnitTest is Test {
     }
 
     function testDonotAllowPlayersWhileRaffleIsCalculating() public {
-        vm.startPrank(player);
+        vm.prank(player);
         raffle.enterRaffle{value:entryfee}();
         vm.warp(block.timestamp + 1 + interval); // it is useed to manipulate the local block chaain time
-        vm.roll(block.number + 1); // it is used to manipulate the local block chain
+        vm.roll(block.number + 1); // it is used to manipulate the local block chain block number
+        raffle.performUpkeep("");
+
+        // Act and Assert
+
+        vm.expectRevert();
+        vm.prank(player);
+        raffle.enterRaffle{value:entryfee}();
+
+
     }
+
+    function testCheckUPKeepReturnsFalse() public {
+        // vm.prank(player);
+        // raffle.enterRaffle{value:entryfee}();
+        // Arrange
+        vm.warp(block.timestamp + 1 + interval); // it is useed to manipulate the local block chaain time
+        vm.roll(block.number + 1); // it is used to manipulate the local block chain block number
+
+    //act
+        (bool upkeep , ) = raffle.checkUpkeep("");
+    //assert
+        assert(!upkeep);
+    }
+
+function testCheckUPKeepReturnsFalseIfRaffleIsNotOpen() public {
+        vm.prank(player);
+        raffle.enterRaffle{value:entryfee}();
+        vm.warp(block.timestamp + 1 + interval); // it is useed to manipulate the local block chaain time
+        vm.roll(block.number + 1); // it is used to manipulate the local block chain block number
+        raffle.performUpkeep("");
+
+        //act
+        (bool upkeep , ) = raffle.checkUpkeep("");
+    //assert
+        assert(!upkeep);
+}
+
 
 
 }
