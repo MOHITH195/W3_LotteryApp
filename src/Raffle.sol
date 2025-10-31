@@ -21,7 +21,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     /* Events */
     event EnteredRaffle(address indexed PlayerAddress);
     event WinnerPicked(address indexed PlayerAddress);
-
+    event RequestedRaffleWinner(uint256 indexed requestId);
 
     /* Type Declaraaions*/
     enum RafleState {
@@ -120,6 +120,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
         });
 
         uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
+        emit RequestedRaffleWinner(requestId);
     }
 // CEI : check ,effects ,interaction
     function fulfillRandomWords(uint256 ,/*requestId*/ uint256[] calldata randomWords) internal override {

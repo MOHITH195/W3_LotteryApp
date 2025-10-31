@@ -6,6 +6,7 @@ import {Test} from "forge-std/Test.sol";
 import {DeployRaffle} from "../../script/DeployRaffle.s.sol";
 import {Raffle} from "src/Raffle.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
+import {Vm} from "forge-std/Vm.sol";
 
 contract RaffleUnitTest is Test {
     Raffle public raffle;
@@ -120,6 +121,53 @@ function testCheckUPKeepReturnsFalseIfRaffleIsNotOpen() public {
     //assert
         assert(!upkeep);
 }
+
+// Challenge
+// testCheckUpkeepReturnsFalseIfEnoughTimeHasPassed
+// testCheckUpkeepReturnsTrueWhenParametersAreGood
+
+// perform UpKeep Tessts
+    function testPerformUpKeepRevertIfUpKeepNotNeeded() public {
+        vm.prank(player);
+        raffle.enterRaffle{value:entryfee}();
+        // vm.warp(block.timestamp + 1+ interval);
+        // vm.roll(block.number + 1);
+         
+         // assert and act
+        //  vm.expectRevert(
+            // abi.encodewithselector(Raffle.Raffle__UpKeepNotNeeded.selector ,balance, length, staate));
+        vm.expectRevert();
+         raffle.performUpkeep("");
+    }
+
+    function testPerformUpKeepUpdatesRaffleStateAndEmitsRequestId() public {
+          // Arrange
+           vm.prank(player);
+        raffle.enterRaffle{value:entryfee}();
+        vm.warp(block.timestamp + 1 + interval); // it is useed to manipulate the local block chaain time
+        vm.roll(block.number + 1); // it is used to manipulate the local block chain block number
+        
+        // act
+        vm.recordLogs();
+        raffle.performUpkeep("");
+        Vm.Log[] memory entries = vm.getRecordedLogs();
+        bytes32 requestId=entries[1].topics[0];
+
+        // assert
+        Raffle.RafleState rafflestatee = raffle.getRaffleState();
+        assert(uint256(requestId) > 0);
+        assert(uint256(rafflestatee)==1);
+    }
+    modifier RaffleEntered(){
+           vm.prank(player);
+        raffle.enterRaffle{value:entryfee}();
+        vm.warp(block.timestamp + 1 + interval); // it is useed to manipulate the local block chaain time
+        vm.roll(block.number + 1); // it is used to manipulate the local block chain block number
+        raffle.performUpkeep("");
+        _;
+    }
+
+    // FullFill random words tests
 
 
 
